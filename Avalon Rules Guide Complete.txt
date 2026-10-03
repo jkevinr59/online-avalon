@@ -1,0 +1,126 @@
+================================================================================
+                         THE RESISTANCE: AVALON - RULES
+================================================================================
+
+Overview:
+The Resistance: Avalon is a social deduction game for 5 to 10 players set in 
+King Arthur's realm. Players are split into two hidden teams:
+- Good (Loyal Servants of Arthur)
+- Evil (Minions of Mordred)
+
+--------------------------------------------------------------------------------
+1. OBJECTIVE & WIN CONDITIONS
+--------------------------------------------------------------------------------
+- Good Wins:
+  * Completes 3 out of 5 Quests successfully AND protects Merlin from being
+    assassinated at the end of the game.
+
+- Evil Wins:
+  * Fails 3 Quests.
+  * Correctly identifies and assassinating Merlin after Good completes 3 Quests.
+  * Reaches 5 consecutive rejected Team proposals in a single round.
+
+--------------------------------------------------------------------------------
+2. PLAYER DISTRIBUTION
+--------------------------------------------------------------------------------
+Players | Good | Evil
+----------------------
+   5    |  3   |  2
+   6    |  4   |  2
+   7    |  4   |  3
+   8    |  5   |  3
+   9    |  6   |  3
+  10    |  6   |  4
+
+--------------------------------------------------------------------------------
+3. ROLES & ABILITIES
+--------------------------------------------------------------------------------
+Base Roles:
+- Merlin (Good): Knows all Evil players (except Mordred), but must guide Good 
+  subtly without revealing his identity.
+- Assassin (Evil): Knows the Evil team. Gets one final attempt to guess and 
+  assassinate Merlin if Good completes 3 Quests.
+- Loyal Servants / Minions: Regular Good/Evil players without special information.
+
+Optional Special Roles:
+- Percival (Good): Sees Merlin and Morgana during setup, but does not know 
+  which is which.
+- Morgana (Evil): Appears as Merlin to Percival.
+- Mordred (Evil): Invisible to Merlin (Merlin's eyes remain closed when Mordred 
+  is revealed).
+- Oberon (Evil): Invisible to other Evil players, and does not know who the 
+  other Evil players are.
+
+--------------------------------------------------------------------------------
+4. NIGHT PHASE (SETUP & SCRIPT)
+--------------------------------------------------------------------------------
+Before starting Round 1, all players close their eyes. A designated player 
+reads the setup script:
+
+1. "Minions of Mordred (except Oberon), open your eyes and look around so you 
+   know each other." -> [Pause, then Close eyes]
+2. "Minions of Mordred (except Mordred), stick out your thumbs so Merlin knows 
+   you." -> "Merlin, open your eyes." -> [Pause, Merlin closes eyes, thumbs down]
+3. (If using Percival & Morgana): "Merlin and Morgana, stick out your thumbs 
+   so Percival knows you." -> "Percival, open your eyes." -> [Pause, Percival 
+   closes eyes, thumbs down]
+4. "Everyone, open your eyes."
+
+--------------------------------------------------------------------------------
+5. ROUND FLOW (5 QUESTS TOTAL)
+--------------------------------------------------------------------------------
+Each round consists of two main phases:
+
+Phase 1: Team Proposal & Voting
+1. Selection: The current Leader nominates a team using the required team size.
+2. Discussion: All players discuss the team composition.
+3. Voting: Every player secretly chooses an Approve or Reject vote token. All 
+   votes are revealed simultaneously.
+   - Approved: Requires a strict majority (e.g., 3/5, 4/6). Proceed to Phase 2.
+   - Rejected / Tied: The Leader token passes clockwise to the next player, 
+     and team proposal repeats.
+   - Note: If 5 team proposals in a row are rejected, Evil wins immediately.
+
+Phase 2: Quest Execution
+Only players selected for the Quest receive a pair of Success and Fail cards.
+- Good players MUST play a Success card.
+- Evil players MAY choose to play a Success or Fail card.
+
+Cards are played face-down, thoroughly shuffled by the Leader, and revealed:
+- Success: All played cards are Success.
+- Fail: 1 Fail card is enough to fail the Quest (except Mission 4 in 7+ player 
+  games).
+
+--------------------------------------------------------------------------------
+6. QUEST REQUIREMENTS & TEAM SIZES
+--------------------------------------------------------------------------------
+Players | Quest 1 | Quest 2 | Quest 3 | Quest 4 | Quest 5
+----------------------------------------------------------
+   5    |    2    |    3    |    2    |    3    |    3
+   6    |    2    |    3    |    4    |    3    |    4
+   7    |    2    |    3    |    3    |   4*    |    4
+   8    |    3    |    4    |    4    |   5*    |    5
+   9    |    3    |    4    |    4    |   5*    |    5
+  10    |    3    |    4    |    4    |   5*    |    5
+
+* Special Rule (7+ Players, Quest 4): Requires 2 Fail cards to fail the quest 
+  instead of 1.
+
+--------------------------------------------------------------------------------
+7. ASSASSINATION PHASE (ENDGAME)
+--------------------------------------------------------------------------------
+If Good completes 3 successful Quests:
+1. Good does not win immediately.
+2. The Evil team unmasks and openly discusses to decide who they think Merlin is.
+3. The Assassin points to one Good player:
+   - If that player is Merlin, Evil steals the victory.
+   - If that player is NOT Merlin, Good wins.
+
+--------------------------------------------------------------------------------
+8. OPTIONAL VARIANT: THE LADY OF THE LAKE
+--------------------------------------------------------------------------------
+- The player to the right of the starting Leader begins with the Lady of the Lake.
+- At the end of Quests 2, 3, and 4, the holder forces any player (who hasn't 
+  been checked yet) to secretly reveal their alignment card (Good/Evil).
+- The inspecting player announces what they saw (they are allowed to lie), 
+  and hands the token to the inspected player.

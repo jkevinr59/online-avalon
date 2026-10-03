@@ -1,0 +1,29 @@
+{
+  "name": "avalon-online",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The Resistance: Avalon - online companion app",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,magenta \"node --disable-warning=ExperimentalWarning --watch server/index.js\" \"vite --config client/vite.config.js\"",
+    "build": "vite build --config client/vite.config.js",
+    "start": "node --disable-warning=ExperimentalWarning --max-old-space-size=256 server/index.js",
+    "test": "node --disable-warning=ExperimentalWarning --test \"server/test/*.test.js\"",
+    "simulate": "node --disable-warning=ExperimentalWarning scripts/simulate.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "socket.io": "^4.8.4",
+    "socket.io-client": "^4.8.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.1",
+    "concurrently": "^10.0.5",
+    "vite": "^8.3.2"
+  }
+}

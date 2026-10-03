@@ -33,7 +33,8 @@ npm run dev        # server on :3000, Vite client on http://localhost:5173
 - Players open `http://localhost:5173` (or `http://<your LAN IP>:5173` from a phone).
 - The host opens `http://localhost:5173/host`.
 
-Default passwords (override with environment variables):
+Default passwords (override with environment variables, or copy `.env.example`
+to `.env`, which `npm run dev` and `npm start` load automatically):
 
 | Who    | Env var           | Default       |
 | ------ | ----------------- | ------------- |

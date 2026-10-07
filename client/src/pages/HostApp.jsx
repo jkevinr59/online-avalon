@@ -145,6 +145,14 @@ function HostControls({ view, run, busy, playing, onJoined }) {
           <button type="button" className="btn btn-primary" disabled={busy} onClick={() => run('reset')}>
             {t('host.newGame')}
           </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={busy}
+            onClick={() => window.confirm(t('host.newEmptyConfirm')) && run('reset', { empty: true })}
+          >
+            {t('host.newEmpty')}
+          </button>
         </>
       ) : (
         <StatusBanner view={view} />

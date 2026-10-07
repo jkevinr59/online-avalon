@@ -158,6 +158,11 @@ test('host can abort a running game and start a new lobby with the same players'
   assert.equal(g.state.phase, PHASE.LOBBY);
   assert.equal(g.state.players.length, 5);
   assert.deepEqual(g.state.roles, {});
+  g.do({ type: 'start' }, HOST);
+  g.do({ type: 'abort' }, HOST);
+  g.do({ type: 'reset', empty: true }, HOST);
+  assert.equal(g.state.phase, PHASE.LOBBY);
+  assert.deepEqual(g.state.players, []);
 });
 
 test('kick and leave only work in the lobby', () => {

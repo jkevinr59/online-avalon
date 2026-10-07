@@ -8,6 +8,7 @@
 //
 // Bots can only join while the server is in the lobby. If a game is running
 // or finished, they keep retrying; press "New game" on /host and they join.
+// If the host opens an empty lobby (which removes everyone), they join again.
 import { io } from 'socket.io-client';
 
 const arg = (name, def) => {
@@ -44,7 +45,7 @@ async function login(name) {
   }
 }
 
-function startBot(name, token) {
+function startBot(name, token, onKicked) {
   const socket = io(URL, { auth: { token }, transports: ['websocket'] });
   let view = null;
   let timer = null;
@@ -53,8 +54,10 @@ function startBot(name, token) {
   socket.on('connect', () => console.log(`${name}: connected`));
   socket.on('connect_error', (err) => console.log(`${name}: ${err.message}`));
   socket.on('kicked', (msg) => {
-    console.log(`${name}: ${msg}`);
+    console.log(`${name}: ${msg} Rejoining…`);
+    clearTimeout(timer);
     socket.disconnect();
+    onKicked();
   });
   socket.on('state', (v) => {
     view = v;
@@ -108,16 +111,18 @@ function startBot(name, token) {
   return socket;
 }
 
-console.log(`Starting ${COUNT} bots against ${URL}`);
-const sockets = [];
-for (let i = 1; i <= COUNT; i++) {
-  const name = `${PREFIX} ${i}`;
+const sockets = new Map(); // name -> current socket
+
+async function join(name) {
   const token = await login(name);
-  sockets.push(startBot(name, token));
+  sockets.set(name, startBot(name, token, () => join(name)));
 }
+
+console.log(`Starting ${COUNT} bots against ${URL}`);
+for (let i = 1; i <= COUNT; i++) await join(`${PREFIX} ${i}`);
 console.log('All bots joined. Start the game from /host. Ctrl+C to stop.');
 
 process.on('SIGINT', () => {
-  for (const s of sockets) s.disconnect();
+  for (const s of sockets.values()) s.disconnect();
   process.exit();
 });

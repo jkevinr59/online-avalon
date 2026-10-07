@@ -294,10 +294,11 @@ const handlers = {
     endGame(s, events, null, 'aborted');
   },
 
-  reset(s, _a, actor) {
+  // New lobby after a game: with the same players, or empty ({ empty: true }).
+  reset(s, { empty = false }, actor) {
     requireHost(actor);
     requirePhase(s, PHASE.GAME_OVER);
-    Object.assign(s, newLobby(s.players));
+    Object.assign(s, newLobby(empty ? [] : s.players));
   },
 };
 

@@ -143,8 +143,12 @@ export function createHub({ io, db, config }) {
 
         const actor = session.kind === 'host' ? { kind: 'host' } : { kind: 'player', playerId: session.playerId };
         if (action.type === 'join') throw new GameError('Not allowed.');
+        const before = state.players;
         dispatch(action, actor);
 
+        if (action.type === 'reset' && action.empty) {
+          for (const p of before) dropPlayerSessions(p.id, 'The host started a new, empty lobby. Join again to play.');
+        }
         if (action.type === 'kick') dropPlayerSessions(action.playerId, 'You were removed from the lobby by the host.');
         if (action.type === 'leave') dropPlayerSessions(session.playerId, 'You left the lobby.');
         ack({ ok: true });

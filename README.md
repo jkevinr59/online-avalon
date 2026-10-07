@@ -21,8 +21,9 @@ the "close your eyes" night phase.
     playing it.
   - Picking a team, voting, playing a quest card and guessing Merlin happen
     in pop-ups. A floating button reopens a pop-up that was closed.
-  - After every vote and quest, everyone sees the result for 20 seconds,
-    along with who leads next or who goes on the quest.
+  - After every vote and quest, everyone sees the result for 10 seconds
+    (5 seconds when an approved team leaves for its quest), along with who
+    leads next or who goes on the quest.
   - Tips depend on the player's role, and a "How to play" page is always
     available. Tips can be turned off.
 - **Languages:** Indonesian (default) and English, switchable on every screen.
@@ -62,7 +63,8 @@ Other settings:
 
 | Env var           | Default | What it does                                                      |
 | ----------------- | ------- | ----------------------------------------------------------------- |
-| `RESULT_PAUSE_MS` | `20000` | How long a vote or quest result stays on screen.                  |
+| `RESULT_PAUSE_MS` | `10000` | How long a vote or quest result stays on screen.                  |
+| `DEPART_PAUSE_MS` | `5000`  | Shorter pause when an approved team leaves for its quest.         |
 | `DEV_ROLES`       | off     | `1` gives players named `alwaysgood`, `alwaysevil` or `alwaysmerlin` that role. |
 
 `DEV_ROLES` is for development only, and `npm run dev` turns it on. A name

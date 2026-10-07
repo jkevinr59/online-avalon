@@ -16,7 +16,7 @@ export function mulberry32(seed) {
 
 export function makeCtx(seed = 1, extra = {}) {
   let id = 0;
-  return { rulesFor: db.rulesFor, rng: mulberry32(seed), newId: () => `game${++id}`, now: () => 1000, pauseMs: 20000, ...extra };
+  return { rulesFor: db.rulesFor, rng: mulberry32(seed), newId: () => `game${++id}`, now: () => 1000, pauseMs: 10000, departPauseMs: 5000, ...extra };
 }
 
 export const HOST = { kind: 'host' };

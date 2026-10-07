@@ -95,9 +95,9 @@ function nextLeader(s) {
 
 const nextLeaderIdx = (s) => (s.leaderIdx + 1) % s.players.length;
 
-function pause(s, ctx, phase) {
+function pause(s, ctx, phase, ms = ctx.pauseMs) {
   s.phase = phase;
-  s.pauseUntil = ctx.now() + ctx.pauseMs;
+  s.pauseUntil = ctx.now() + ms;
 }
 
 // What happens when the current result pause ends. Public information, so the
@@ -228,7 +228,8 @@ const handlers = {
     s.votes = {};
     s.rejectCount = approved ? 0 : s.rejectCount + 1;
     events.push({ type: 'vote_result', ...record });
-    pause(s, ctx, PHASE.VOTE_RESULT);
+    // An approved team goes on its quest after a shorter pause.
+    pause(s, ctx, PHASE.VOTE_RESULT, approved ? ctx.departPauseMs ?? ctx.pauseMs : ctx.pauseMs);
   },
 
   quest(s, { success }, actor, ctx, events) {
@@ -306,7 +307,7 @@ const handlers = {
  * @param state  current state (not mutated)
  * @param action { type, ...payload }
  * @param actor  { kind: 'player', playerId } | { kind: 'host' } | { kind: 'system' }
- * @param ctx    { rulesFor(n), rng(), newId(), now(), pauseMs, devRoles }
+ * @param ctx    { rulesFor(n), rng(), newId(), now(), pauseMs, departPauseMs, devRoles }
  * @returns { state, events }
  */
 export function apply(state, action, actor, ctx) {

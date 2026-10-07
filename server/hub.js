@@ -19,6 +19,7 @@ export function createHub({ io, db, config }) {
     newId,
     now: Date.now,
     pauseMs: config.resultPauseMs,
+    departPauseMs: config.departPauseMs,
     devRoles: config.devRoles,
   };
   let pauseTimer = null;

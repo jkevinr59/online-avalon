@@ -190,7 +190,7 @@ test('votes and quests pause on a result phase until the timer or host continues
   g.propose(g.teamOf([]));
   for (const id of g.ids) g.do({ type: 'vote', approve: false }, as(id));
   assert.equal(g.state.phase, PHASE.VOTE_RESULT);
-  assert.equal(g.state.pauseUntil, 21000);
+  assert.equal(g.state.pauseUntil, 11000); // 10 s after a rejection
   assert.equal(g.state.rejectCount, 1);
   assert.equal(g.state.leaderIdx, leaderIdx); // leadership only passes after the pause
   assert.throws(() => g.do({ type: 'continue' }, as(g.ids[0])), /host/);
@@ -203,6 +203,7 @@ test('votes and quests pause on a result phase until the timer or host continues
   const team = g.teamOf([]);
   g.propose(team);
   for (const id of g.ids) g.do({ type: 'vote', approve: true }, as(id));
+  assert.equal(g.state.pauseUntil, 6000); // 5 s before an approved team departs
   g.continue();
   assert.equal(g.state.phase, PHASE.QUEST);
   for (const id of team) g.do({ type: 'quest', success: true }, as(id));

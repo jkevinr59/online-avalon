@@ -11,6 +11,7 @@ import { GameError } from './game/engine.js';
 
 export function startServer(overrides = {}) {
   const config = { ...defaultConfig, ...overrides };
+  if (config.devRoles) console.warn('DEV_ROLES is on: players named alwaysgood / alwaysevil / alwaysmerlin get that role.');
   const db = openDb(config.dbPath);
   const app = express();
   const server = http.createServer(app);

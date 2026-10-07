@@ -96,6 +96,6 @@ test('result pause shows the vote and announces the next leader', () => {
   const v = viewFor(g.state, as(g.ids[0]), new Set(), 6000);
   assert.equal(v.phase, PHASE.VOTE_RESULT);
   assert.equal(v.lastVote.approved, false);
-  assert.deepEqual(v.reveal, { kind: 'vote', next: { type: 'leader', leaderId: nextLeader }, remainingMs: 15000 });
+  assert.deepEqual(v.reveal, { kind: 'vote', next: { type: 'leader', leaderId: nextLeader }, remainingMs: 5000 });
   assert.deepEqual(v.waitingFor, []);
 });

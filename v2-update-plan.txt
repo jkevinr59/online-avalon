@@ -1,0 +1,79 @@
+i playtested it and i need some changes to it
+
+1. the role reveal should be at the start so they dont get overwhelmed with unfamiliar Interface, role reveal should be on full page with tips to play that role on below of it, brief but clear enough
+2. language can be selected but default is indonesian
+3. I think proposing part, voting part, quest part need to be on pop up modal and if its closed there is easy to find button to open that again
+4. I think we need more tips for player who still new to it
+   tips are shown per role (Indonesian text below, English version needed too for item 2).
+   terms: Pelayan Setia Arthur = Loyal Servant, Antek Mordred = Minion/Evil, Misi = Quest,
+   Pemimpin = Leader, Setuju/Tolak = Approve/Reject, Sukses/Gagal = Success/Fail
+
+   [Pengungkapan Peran - full page at start, see item 1]
+   Pelayan Setia Arthur (Tim Baik):
+   - Kamu tidak tahu peran siapa pun, jadi andalkan pengamatan.
+   - Kalau misi gagal, berarti ada Tim Jahat di tim misi itu. Ingat siapa saja anggotanya.
+   - Perhatikan juga siapa yang menyetujui tim yang gagal.
+   Merlin (Tim Baik):
+   - Kamu tahu siapa saja Tim Jahat, tapi jangan sampai ketahuan.
+   - Arahkan teman secara halus, jangan menuduh terang-terangan.
+   - Kalau Tim Baik menang 3 misi, Tim Jahat boleh menebak siapa Merlin. Kalau tebakannya benar, Tim Baik kalah.
+   Antek Mordred (Tim Jahat):
+   - Berpuralah jadi Tim Baik dan ikut berdiskusi seperti biasa.
+   - Bantu sesama Tim Jahat diam-diam, jangan terlihat terlalu kompak.
+   - Cari pemain yang selalu "kebetulan benar" soal siapa yang jahat, karena dia kemungkinan Merlin.
+
+   [Pemimpin Memilih Tim - shown to the leader, depends on role]
+   Pelayan Setia:
+   - Masukkan dirimu sendiri, karena kamu yakin dirimu baik.
+   - Pilih pemain yang pernah ikut misi yang sukses.
+   - Hindari pemain yang pernah ikut misi yang gagal.
+   Merlin:
+   - Masukkan dirimu sendiri dan pemain yang kamu tahu baik.
+   - Sesekali masukkan pemain yang belum jelas, supaya pilihanmu tidak terlihat terlalu "sempurna".
+   - Beri alasan yang masuk akal, misalnya "dia ikut misi yang sukses tadi."
+   Antek Mordred:
+   - Masukkan dirimu atau satu teman Jahat. Satu saja sudah cukup untuk menggagalkan misi.
+   - Isi sisanya dengan pemain baik supaya timmu terlihat meyakinkan.
+   - Jangan memasukkan terlalu banyak Tim Jahat sekaligus, karena itu mencurigakan.
+
+   [Voting Tim - depends on role]
+   Pelayan Setia:
+   - Setujui tim yang berisi pemain yang kamu percaya.
+   - Tolak tim yang berisi pemain yang mencurigakan.
+   - Kalau sudah 4 kali ditolak, pertimbangkan untuk Setuju. Penolakan ke-5 membuat Tim Jahat langsung menang.
+   Merlin:
+   - Tolak tim yang berisi Tim Jahat, tapi tidak harus setiap kali.
+   - Kalau kamu selalu benar, Tim Jahat akan curiga kamu Merlin.
+   - Ingat bahwa vote semua pemain terlihat setelah voting selesai.
+   Antek Mordred:
+   - Setujui tim yang berisi Tim Jahat, tapi jangan terlalu bersemangat.
+   - Sesekali tolak tim yang berisi temanmu supaya terlihat netral.
+   - Menolak terus-menerus juga bisa membuat Tim Jahat menang lewat 5 kali penolakan, tapi hati-hati karena itu mudah ketahuan.
+
+   [Menjalankan Misi]
+   Tim Baik (Pelayan Setia dan Merlin):
+   - Kamu hanya bisa memilih Sukses.
+   - Setelah hasil keluar, ingat siapa saja anggota timnya.
+   Antek Mordred:
+   - Pilih Gagal untuk merusak misi. Kartumu anonim, hanya totalnya yang terlihat.
+   - Kamu juga boleh memilih Sukses untuk menyamar sebagai Tim Baik dan membangun kepercayaan, terutama di misi awal.
+   - Kalau ada 2 Tim Jahat di misi yang sama, sepakati siapa yang memilih Gagal. Dua kartu Gagal langsung membuka kedok kalian.
+   - Ingat bahwa misi bertanda ★ butuh 2 kartu Gagal untuk gagal.
+
+   [Menebak Merlin - end of game]
+   Antek Mordred:
+   - Siapa yang sering benar soal siapa yang jahat?
+   - Siapa yang selalu menolak tim berisi Tim Jahat?
+   - Diskusikan dulu dengan timmu sebelum memilih.
+   Tim Baik:
+   - Tetap tenang dan jangan menatap Merlin!
+
+   [Bantuan Umum - "Cara Bermain" button, always available]
+   - Cara menang:
+     - Tim Baik menang dengan 3 misi sukses.
+     - Tim Jahat menang dengan 3 misi gagal, 5 kali penolakan tim dalam satu ronde, atau menebak Merlin dengan benar.
+   - Alur tiap ronde: Pemimpin memilih tim -> semua voting -> tim menjalankan misi -> giliran pemimpin pindah.
+   - Penghitung penolakan: kalau mencapai 5, Tim Jahat menang.
+   - ★: misi ini butuh 2 kartu Gagal untuk gagal.
+5. for development purpose, player with name alwaysgood,alwaysevil and alwaysmerlin should get what role they want, if player with that name is not exceeded needed player, as example 2 player with name alwaysmerlin will got 1 of it merlin, preferably who joins first
+6. after everyone votes, pause 20 seconds and show the vote result big and clear on everyone's screen (approved/rejected, the count, and who voted approve/reject) so players don't need to dig through the history. during that pause also announce what happens next: if rejected, tell who the next leader is (and tell that player "you're the next leader, get ready to pick a team"); if approved, tell who goes on the quest. after the pause the next phase starts automatically. the same kind of pause should be used after a quest result (success/fail count + who was on the team). keep the full history available but it should not be needed to play

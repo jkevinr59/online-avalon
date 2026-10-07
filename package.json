@@ -12,7 +12,8 @@
     "build": "vite build --config client/vite.config.js",
     "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning --max-old-space-size=256 server/index.js",
     "test": "node --disable-warning=ExperimentalWarning --test \"server/test/*.test.js\"",
-    "simulate": "node --disable-warning=ExperimentalWarning scripts/simulate.js"
+    "simulate": "node --disable-warning=ExperimentalWarning scripts/simulate.js",
+    "bots": "node --env-file-if-exists=.env scripts/bots.js"
   },
   "dependencies": {
     "express": "^5.2.1",

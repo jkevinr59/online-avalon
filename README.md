@@ -77,6 +77,18 @@ npm test                                      # engine rules + "no secret leaks"
 npm run simulate -- --players 7 --games 5     # bots play full games over real sockets
 ```
 
+To play a real game yourself with fewer people, let bots fill the other seats
+on the running server (`npm run dev` or `npm start`):
+
+```bash
+npm run bots                                  # 4 bots named "Bot 1".."Bot 4"
+npm run bots -- --count 3 --delay 3000        # 3 bots, ~3 s thinking time
+```
+
+Bots only join while the server is in the lobby. If a game is running or
+finished, they keep retrying until the host presses "New game". Stop them with
+Ctrl+C.
+
 ## How it works
 
 ```

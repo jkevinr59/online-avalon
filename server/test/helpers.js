@@ -14,20 +14,21 @@ export function mulberry32(seed) {
   };
 }
 
-export function makeCtx(seed = 1) {
+export function makeCtx(seed = 1, extra = {}) {
   let id = 0;
-  return { rulesFor: db.rulesFor, rng: mulberry32(seed), newId: () => `game${++id}` };
+  return { rulesFor: db.rulesFor, rng: mulberry32(seed), newId: () => `game${++id}`, now: () => 1000, pauseMs: 20000, ...extra };
 }
 
 export const HOST = { kind: 'host' };
+export const SYSTEM = { kind: 'system' };
 export const as = (playerId) => ({ kind: 'player', playerId });
 
 // Wraps the engine so tests read like a script.
 export class Game {
-  constructor(n, seed = 1) {
-    this.ctx = makeCtx(seed);
+  constructor(n, seed = 1, { names = [], devRoles = false } = {}) {
+    this.ctx = makeCtx(seed, { devRoles });
     this.state = newLobby();
-    for (let i = 1; i <= n; i++) this.do({ type: 'join', playerId: `p${i}`, name: `Player ${i}` }, { kind: 'system' });
+    for (let i = 1; i <= n; i++) this.do({ type: 'join', playerId: `p${i}`, name: names[i - 1] ?? `Player ${i}` }, SYSTEM);
     this.do({ type: 'start' }, HOST);
   }
   do(action, actor) {
@@ -56,14 +57,20 @@ export class Game {
   propose(team) {
     return this.do({ type: 'propose', team }, as(this.leader));
   }
+  // Everyone votes, then the result pause ends (as the server timer would).
   voteAll(approve) {
     for (const id of this.ids) this.do({ type: 'vote', approve: typeof approve === 'function' ? approve(id) : approve }, as(id));
+    this.continue();
+  }
+  continue() {
+    return this.do({ type: 'continue' }, SYSTEM);
   }
   // Proposes `team`, approves it, then plays cards: ids in `failers` play Fail.
   runQuest(team, failers = []) {
     this.propose(team);
     this.voteAll(true);
     for (const id of team) this.do({ type: 'quest', success: !failers.includes(id) }, as(id));
+    this.continue();
   }
   // A team of `size` built from `preferred` first, topped up with others.
   teamOf(preferred, size = this.questSize) {

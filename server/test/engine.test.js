@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { apply, newLobby, GameError } from '../game/engine.js';
-import { Game, HOST, as, makeCtx, PHASE, ROLE } from './helpers.js';
+import { Game, HOST, SYSTEM, as, makeCtx, PHASE, ROLE } from './helpers.js';
 
 const EXPECTED = { 5: [3, 2], 6: [4, 2], 7: [4, 3], 8: [5, 3], 9: [6, 3], 10: [6, 4] };
 
@@ -177,4 +177,74 @@ test('unknown actions are rejected without touching state', () => {
   assert.throws(() => g.do({ type: 'constructor' }, HOST), /Unknown/);
   assert.throws(() => g.do({ type: 'nope' }, HOST), /Unknown/);
   assert.equal(JSON.stringify(g.state), before);
+});
+
+test('votes and quests pause on a result phase until the timer or host continues', () => {
+  const g = new Game(5);
+  const leaderIdx = g.state.leaderIdx;
+  g.propose(g.teamOf([]));
+  for (const id of g.ids) g.do({ type: 'vote', approve: false }, as(id));
+  assert.equal(g.state.phase, PHASE.VOTE_RESULT);
+  assert.equal(g.state.pauseUntil, 21000);
+  assert.equal(g.state.rejectCount, 1);
+  assert.equal(g.state.leaderIdx, leaderIdx); // leadership only passes after the pause
+  assert.throws(() => g.do({ type: 'continue' }, as(g.ids[0])), /host/);
+  g.do({ type: 'continue' }, HOST);
+  assert.equal(g.state.phase, PHASE.TEAM_BUILDING);
+  assert.equal(g.state.leaderIdx, (leaderIdx + 1) % 5);
+  assert.equal(g.state.pauseUntil, null);
+  assert.throws(() => g.do({ type: 'continue' }, SYSTEM), /not available/);
+
+  const team = g.teamOf([]);
+  g.propose(team);
+  for (const id of g.ids) g.do({ type: 'vote', approve: true }, as(id));
+  g.continue();
+  assert.equal(g.state.phase, PHASE.QUEST);
+  for (const id of team) g.do({ type: 'quest', success: true }, as(id));
+  assert.equal(g.state.phase, PHASE.QUEST_RESULT);
+  assert.equal(g.state.quests[0].result, 'SUCCESS');
+  assert.deepEqual(g.state.lastQuest.team, team);
+  assert.equal(g.state.round, 0);
+  g.continue();
+  assert.deepEqual([g.state.phase, g.state.round], [PHASE.TEAM_BUILDING, 1]);
+});
+
+test('the 5th rejection and the 3rd failed quest end the game after the pause', () => {
+  const g = new Game(5);
+  for (let i = 0; i < 5; i++) {
+    g.propose(g.teamOf([]));
+    for (const id of g.ids) g.do({ type: 'vote', approve: false }, as(id));
+    if (i < 4) g.continue();
+  }
+  assert.equal(g.state.phase, PHASE.VOTE_RESULT);
+  g.continue();
+  assert.deepEqual([g.state.phase, g.state.result.reason], [PHASE.GAME_OVER, '5_rejections']);
+
+  const h = new Game(5);
+  for (let i = 0; i < 2; i++) h.runQuest(h.teamOf([h.evil[0]]), [h.evil[0]]);
+  const team = h.teamOf([h.evil[0]]);
+  h.propose(team);
+  h.voteAll(true);
+  for (const id of team) h.do({ type: 'quest', success: id !== h.evil[0] }, as(id));
+  assert.equal(h.state.phase, PHASE.QUEST_RESULT);
+  h.continue();
+  assert.deepEqual([h.state.phase, h.state.result.reason], [PHASE.GAME_OVER, '3_quests_failed']);
+});
+
+test('dev role names get their role, first joined first, only while seats are left', () => {
+  const names = ['alwaysmerlin', 'alwaysmerlin2', 'AlwaysEvil', 'alwaysevil-b', 'alwaysevil-c', 'alwaysgood', 'Player 7'];
+  for (let seed = 1; seed <= 10; seed++) {
+    const g = new Game(7, seed, { names, devRoles: true }); // 7 players: 4 good (incl. Merlin), 3 evil
+    const role = (name) => g.state.roles[g.state.players.find((p) => p.name === name).id];
+    assert.equal(role('alwaysmerlin'), ROLE.MERLIN);
+    assert.notEqual(role('alwaysmerlin2'), ROLE.MERLIN);
+    assert.deepEqual(['AlwaysEvil', 'alwaysevil-b', 'alwaysevil-c'].map(role), [ROLE.EVIL, ROLE.EVIL, ROLE.EVIL]);
+    assert.equal(role('alwaysgood'), ROLE.GOOD);
+    assert.equal(g.byRole(ROLE.MERLIN).length, 1);
+    assert.equal(g.evil.length, 3);
+  }
+  // Without the dev flag the names mean nothing.
+  const merlins = new Set();
+  for (let seed = 1; seed <= 20; seed++) merlins.add(new Game(5, seed, { names }).byRole(ROLE.MERLIN)[0]);
+  assert.ok(merlins.size > 1);
 });

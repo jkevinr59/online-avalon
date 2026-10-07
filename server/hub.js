@@ -13,7 +13,15 @@ export function createHub({ io, db, config }) {
   const sessions = new Map(saved?.sessions ?? []); // token -> { kind: 'player', playerId } | { kind: 'host' }
   const presence = new Map(); // playerId -> number of connected sockets
 
-  const ctx = { rulesFor: db.rulesFor, rng: () => crypto.randomInt(2 ** 32) / 2 ** 32, newId };
+  const ctx = {
+    rulesFor: db.rulesFor,
+    rng: () => crypto.randomInt(2 ** 32) / 2 ** 32,
+    newId,
+    now: Date.now,
+    pauseMs: config.resultPauseMs,
+    devRoles: config.devRoles,
+  };
+  let pauseTimer = null;
 
   function persist() {
     db.saveLive({ state, sessions: [...sessions] });
@@ -50,7 +58,23 @@ export function createHub({ io, db, config }) {
     if (result.events.length && state.gameId) db.recordEvents(state.gameId, result.events);
     persist();
     broadcast();
+    schedulePause();
   }
+
+  // A result pause ends by itself; this also resumes one after a restart.
+  function schedulePause() {
+    clearTimeout(pauseTimer);
+    pauseTimer = null;
+    if (state.pauseUntil == null) return;
+    pauseTimer = setTimeout(() => {
+      try {
+        dispatch({ type: 'continue' }, { kind: 'system' });
+      } catch (err) {
+        console.error(err);
+      }
+    }, Math.max(0, state.pauseUntil - Date.now()));
+  }
+  schedulePause();
 
   function dropPlayerSessions(playerId, reason) {
     for (const [token, s] of sessions) if (s.kind === 'player' && s.playerId === playerId) sessions.delete(token);
@@ -131,5 +155,5 @@ export function createHub({ io, db, config }) {
     });
   });
 
-  return { joinAsPlayer, hostLogin, getState: () => state };
+  return { joinAsPlayer, hostLogin, getState: () => state, stop: () => clearTimeout(pauseTimer) };
 }

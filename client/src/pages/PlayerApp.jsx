@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { PLAYER_TOKEN, postJson, useStoredToken } from '../lib.js';
 import { GameScreen } from '../components/GameScreen.jsx';
+import { LangSwitch } from '../components/Modal.jsx';
+import { useI18n } from '../i18n.jsx';
 
 export function PlayerApp() {
   const [token, setToken] = useStoredToken(PLAYER_TOKEN);
@@ -21,6 +23,7 @@ export function PlayerApp() {
 }
 
 function PlayerLogin({ notice, onLogin }) {
+  const { t, tError } = useI18n();
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,23 +45,26 @@ function PlayerLogin({ notice, onLogin }) {
 
   return (
     <main className="page narrow">
+      <div className="corner">
+        <LangSwitch />
+      </div>
       <h1 className="title">Avalon</h1>
-      <p className="muted center">The Resistance: Avalon. Join the table.</p>
-      {notice && <div className="banner">{notice}</div>}
+      <p className="muted center">{t('login.subtitle')}</p>
+      {notice && <div className="banner">{tError(notice)}</div>}
       <form className="card stack" onSubmit={submit}>
         <label>
-          Your name
+          {t('login.name')}
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={20} autoComplete="nickname" autoFocus required />
         </label>
         <label>
-          Game password
+          {t('login.password')}
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </label>
-        {error && <p className="error">{error}</p>}
+        {error && <p className="error">{tError(error)}</p>}
         <button className="btn btn-primary" disabled={busy}>
-          {busy ? 'Joining…' : 'Join game'}
+          {t(busy ? 'login.joining' : 'login.join')}
         </button>
-        <p className="hint">Lost your session mid-game? Join again with the exact same name to get your seat back.</p>
+        <p className="hint">{t('login.rejoinHint')}</p>
       </form>
     </main>
   );

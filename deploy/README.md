@@ -36,9 +36,10 @@ node --version   # should print v24.x
 ## 4. Get the code and build it
 
 ```bash
-sudo useradd --system --create-home --home-dir /opt/avalon-online avalon || true
+sudo useradd --system --no-create-home --home-dir /opt/avalon-online avalon || true
 sudo git clone https://github.com/jkevinr59/online-avalon.git /opt/avalon-online
 sudo chown -R avalon:avalon /opt/avalon-online
+sudo chmod 755 /opt/avalon-online
 cd /opt/avalon-online
 sudo -u avalon npm ci
 sudo -u avalon npm run build

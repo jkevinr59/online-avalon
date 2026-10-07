@@ -14,7 +14,7 @@ const PLAYERS = arg('players', 7);
 const GAMES = arg('games', 5);
 const REASONS = ['5_rejections', '3_quests_failed', 'merlin_found', 'merlin_safe'];
 
-const app = await startServer({ port: 0, dbPath: ':memory:', playerPassword: 'pw', hostPassword: 'hpw' });
+const app = await startServer({ port: 0, dbPath: ':memory:', playerPassword: 'pw', hostPassword: 'hpw', resultPauseMs: 20 });
 const base = `http://localhost:${app.port}`;
 
 async function post(path, body) {

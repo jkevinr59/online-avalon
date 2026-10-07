@@ -16,6 +16,16 @@ the "close your eyes" night phase.
   - In games of 7+ players, Quest 4 needs two Fail cards to fail.
 - **Endgame:** the Evil team unmasks and votes on who Merlin is. The guess
   locks when a strict majority of Evil agree.
+- **New-player friendly:**
+  - Each player sees their role on a full page at the start, with tips for
+    playing it.
+  - Picking a team, voting, playing a quest card and guessing Merlin happen
+    in pop-ups. A floating button reopens a pop-up that was closed.
+  - After every vote and quest, everyone sees the result for 20 seconds,
+    along with who leads next or who goes on the quest.
+  - Tips depend on the player's role, and a "How to play" page is always
+    available. Tips can be turned off.
+- **Languages:** Indonesian (default) and English, switchable on every screen.
 - **Host dashboard (`/host`):** the host sees who joined and can kick players,
   start the game, play as well, end a game early and start a new game with the
   same players. The dashboard shows only public information.
@@ -47,6 +57,18 @@ Production mode, with one process and one port:
 npm run build
 npm start          # http://localhost:3000
 ```
+
+Other settings:
+
+| Env var           | Default | What it does                                                      |
+| ----------------- | ------- | ----------------------------------------------------------------- |
+| `RESULT_PAUSE_MS` | `20000` | How long a vote or quest result stays on screen.                  |
+| `DEV_ROLES`       | off     | `1` gives players named `alwaysgood`, `alwaysevil` or `alwaysmerlin` that role. |
+
+`DEV_ROLES` is for development only, and `npm run dev` turns it on. A name
+only has to start with the keyword (e.g. `alwaysevil2`), because names must be
+unique. When more players ask for a role than it has seats, the first to join
+gets it. Never enable it for real games.
 
 ## Tests
 

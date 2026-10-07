@@ -67,6 +67,8 @@ test('no hidden information leaks across many random games', () => {
         const voter = g.evil.find((e) => !(e in s.merlinVotes)) ?? g.evil[0];
         const leading = Object.values(s.merlinVotes)[0];
         g.do({ type: 'merlinVote', target: leading ?? pick(candidates) }, as(voter));
+      } else {
+        g.continue();
       }
       checkNoLeaks(g);
     }
@@ -84,4 +86,16 @@ test('waitingFor tracks who still has to act', () => {
   g.propose(g.teamOf([]));
   g.do({ type: 'vote', approve: true }, as(g.ids[0]));
   assert.deepEqual(viewFor(g.state, { kind: 'host' }).waitingFor, g.ids.slice(1));
+});
+
+test('result pause shows the vote and announces the next leader', () => {
+  const g = new Game(5);
+  const nextLeader = g.ids[(g.state.leaderIdx + 1) % 5];
+  g.propose(g.teamOf([]));
+  for (const id of g.ids) g.do({ type: 'vote', approve: false }, as(id));
+  const v = viewFor(g.state, as(g.ids[0]), new Set(), 6000);
+  assert.equal(v.phase, PHASE.VOTE_RESULT);
+  assert.equal(v.lastVote.approved, false);
+  assert.deepEqual(v.reveal, { kind: 'vote', next: { type: 'leader', leaderId: nextLeader }, remainingMs: 15000 });
+  assert.deepEqual(v.waitingFor, []);
 });

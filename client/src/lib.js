@@ -3,12 +3,9 @@ import { io } from 'socket.io-client';
 
 export const PLAYER_TOKEN = 'avalon.playerToken';
 export const HOST_TOKEN = 'avalon.hostToken';
+export const SEEN_ROLE = 'avalon.seenRole'; // "<gameId>:<playerId>" once the role reveal was dismissed
 
-export const ROLE_INFO = {
-  GOOD: { label: 'Loyal Servant of Arthur', short: 'Good', cls: 'good' },
-  MERLIN: { label: 'Merlin', short: 'Merlin', cls: 'merlin' },
-  EVIL: { label: 'Minion of Mordred', short: 'Evil', cls: 'evil' },
-};
+export const ROLE_CLS = { GOOD: 'good', MERLIN: 'merlin', EVIL: 'evil' };
 
 // localStorage can throw (private mode, blocked storage), so every access is guarded.
 function readStorage(key) {
@@ -112,26 +109,3 @@ export function useActions(act) {
 
 export const nameOf = (view, id) => view.players.find((p) => p.id === id)?.name ?? '?';
 export const namesOf = (view, ids) => ids.map((id) => nameOf(view, id));
-export const listNames = (names) =>
-  names.length <= 1 ? names.join('') : `${names.slice(0, -1).join(', ')} and ${names.at(-1)}`;
-
-export function reasonText(view) {
-  const r = view.result;
-  if (!r) return '';
-  const guess = r.merlinGuess ? nameOf(view, r.merlinGuess) : null;
-  const merlin = view.players.find((p) => p.role === 'MERLIN');
-  switch (r.reason) {
-    case '5_rejections':
-      return 'Five team proposals in a row were rejected.';
-    case '3_quests_failed':
-      return 'Three quests failed.';
-    case 'merlin_found':
-      return `Good completed 3 quests, but Evil found Merlin (${guess}).`;
-    case 'merlin_safe':
-      return `Good completed 3 quests. Evil guessed ${guess}, but Merlin was ${merlin?.name ?? '?'}.`;
-    case 'aborted':
-      return 'The host ended the game early.';
-    default:
-      return '';
-  }
-}

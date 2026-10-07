@@ -345,6 +345,8 @@ summary:focus-visible {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  text-align: left;
   padding: 16px;
   background: none;
   border: 0;
@@ -668,4 +670,323 @@ td {
 }
 .history li:first-child {
   border-top: 0;
+}
+
+/* Top bar actions and language switch */
+.topbar-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.topbar-actions.end {
+  margin-bottom: -4px;
+}
+.corner {
+  display: flex;
+  justify-content: flex-end;
+}
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.lang-switch button {
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-height: 34px;
+  min-width: 38px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.lang-switch button.active {
+  background: var(--primary);
+  color: var(--primary-text);
+}
+.link-btn {
+  font: inherit;
+  font-size: 0.8rem;
+  background: none;
+  border: 0;
+  padding: 4px;
+  color: var(--muted);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.row-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgb(15 23 42 / 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.modal {
+  background: var(--surface);
+  color: var(--text);
+  width: 100%;
+  max-width: 560px;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -10px 40px rgb(0 0 0 / 0.3);
+  border-top: 5px solid var(--primary);
+}
+.modal-action {
+  border-top-color: var(--good);
+}
+.modal-result {
+  border-top-color: var(--merlin);
+}
+@media (min-width: 600px) {
+  .modal-backdrop {
+    align-items: center;
+    padding: 16px;
+  }
+  .modal {
+    border-radius: 18px;
+  }
+}
+.modal-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.modal-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.modal-close {
+  font: inherit;
+  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  flex: none;
+}
+.modal-body {
+  padding: 14px 16px 20px;
+}
+
+/* Floating button that reopens the current pop-up */
+.fab {
+  position: fixed;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 15;
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.05rem;
+  min-height: 54px;
+  padding: 0 28px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--good);
+  color: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+  cursor: pointer;
+  max-width: calc(100vw - 32px);
+  animation: fab-pulse 2s ease-in-out infinite;
+}
+.fab-result {
+  background: var(--merlin);
+}
+@media (prefers-color-scheme: dark) {
+  .fab {
+    color: #0b1120;
+  }
+}
+@keyframes fab-pulse {
+  0%,
+  100% {
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.3), 0 0 0 6px rgb(37 99 235 / 0.25);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fab {
+    animation: none;
+  }
+}
+
+/* Tips */
+.tips {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--merlin-soft);
+  border: 1px solid var(--merlin);
+  color: var(--text);
+  text-align: left;
+}
+.tips-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.tips ul,
+.help-section ul {
+  margin: 6px 0 0;
+  padding-left: 20px;
+}
+.tips li,
+.help-section li {
+  margin: 4px 0;
+}
+.help-section + .help-section {
+  margin-top: 14px;
+}
+.help-settings {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+label.check {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+label.check input {
+  width: 22px;
+  height: 22px;
+  min-height: 0;
+  flex: none;
+}
+
+/* Full-page role reveal at the start of the game */
+.reveal-page {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  gap: 10px;
+  text-align: center;
+  padding: 28px 18px;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface);
+}
+.reveal-page h1 {
+  font-size: 1.7rem;
+}
+.reveal-page .btn {
+  margin-top: 12px;
+}
+.reveal-icon {
+  font-size: 3rem;
+}
+.role-name.big {
+  font-size: 2.2rem;
+  line-height: 1.1;
+}
+.reveal-page.role-good .role-name,
+.reveal-page.role-good .role-team {
+  color: var(--good);
+}
+.reveal-page.role-merlin .role-name,
+.reveal-page.role-merlin .role-team {
+  color: var(--merlin);
+}
+.reveal-page.role-evil .role-name,
+.reveal-page.role-evil .role-team {
+  color: var(--evil);
+}
+.reveal-knowledge {
+  font-size: 1.05rem;
+}
+
+/* Vote / quest result during the pause */
+.reveal {
+  text-align: center;
+}
+.reveal .chips {
+  justify-content: center;
+}
+.reveal-headline {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 4px 0;
+}
+.reveal-count {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+.reveal-score {
+  font-weight: 700;
+  margin-top: 10px;
+}
+.vote-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+  text-align: center;
+}
+.vote-split h4 {
+  margin: 0 0 4px;
+}
+.next-up {
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.next-me {
+  background: var(--good-soft);
+  border: 2px solid var(--good);
+}
+.next-bad {
+  background: var(--evil-soft);
+  border-color: var(--evil);
+  color: var(--evil);
+  font-weight: 700;
+}
+.countdown {
+  margin-top: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.panel h3 {
+  margin-top: 0;
 }

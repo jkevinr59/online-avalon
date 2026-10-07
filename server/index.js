@@ -49,7 +49,7 @@ export function startServer(overrides = {}) {
 
   return new Promise((resolve) => {
     server.listen(config.port, () => {
-      resolve({ server, io, hub, db, port: server.address().port, close: () => new Promise((r) => io.close(() => r())) });
+      resolve({ server, io, hub, db, port: server.address().port, close: () => new Promise((r) => { hub.stop(); io.close(() => r()); }) });
     });
   });
 }

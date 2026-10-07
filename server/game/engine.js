@@ -6,7 +6,9 @@ export const PHASE = {
   LOBBY: 'LOBBY',
   TEAM_BUILDING: 'TEAM_BUILDING',
   TEAM_VOTE: 'TEAM_VOTE',
+  VOTE_RESULT: 'VOTE_RESULT', // pause: everyone sees the vote before the game moves on
   QUEST: 'QUEST',
+  QUEST_RESULT: 'QUEST_RESULT', // pause: everyone sees the quest outcome
   MERLIN_VOTE: 'MERLIN_VOTE',
   GAME_OVER: 'GAME_OVER',
 };
@@ -17,6 +19,9 @@ export const MIN_PLAYERS = 5;
 export const MAX_PLAYERS = 10;
 export const MAX_REJECTS = 5;
 export const NAME_MAX = 20;
+// Development only (ctx.devRoles): players named e.g. "alwaysmerlin" or
+// "alwaysevil2" get that role while seats of that role are left.
+export const DEV_ROLE_NAME = /^always(good|evil|merlin)/i;
 
 export class GameError extends Error {}
 
@@ -35,7 +40,8 @@ export function newLobby(players = []) {
     questCards: {}, // playerId -> boolean success (never revealed per player)
     merlinVotes: {}, // evil playerId -> target playerId
     voteHistory: [], // [{ round, attempt, leaderId, team, votes, approved }]
-    lastQuest: null, // { round, successes, fails, result }
+    lastQuest: null, // { round, successes, fails, result, team }
+    pauseUntil: null, // ms timestamp when a VOTE_RESULT / QUEST_RESULT pause ends
     result: null, // { winner, reason, merlinGuess }
   };
 }
@@ -73,6 +79,7 @@ function shuffle(arr, rng) {
 
 function endGame(s, events, winner, reason, extra = {}) {
   s.phase = PHASE.GAME_OVER;
+  s.pauseUntil = null;
   s.proposal = null;
   s.votes = {};
   s.questCards = {};
@@ -81,9 +88,52 @@ function endGame(s, events, winner, reason, extra = {}) {
 }
 
 function nextLeader(s) {
-  s.leaderIdx = (s.leaderIdx + 1) % s.players.length;
+  s.leaderIdx = nextLeaderIdx(s);
   s.proposal = null;
   s.phase = PHASE.TEAM_BUILDING;
+}
+
+const nextLeaderIdx = (s) => (s.leaderIdx + 1) % s.players.length;
+
+function pause(s, ctx, phase) {
+  s.phase = phase;
+  s.pauseUntil = ctx.now() + ctx.pauseMs;
+}
+
+// What happens when the current result pause ends. Public information, so the
+// view shows it during the pause ("next leader is ...").
+//   { type: 'quest', team } | { type: 'leader', leaderId } | { type: 'merlin' } | { type: 'end', reason }
+// Both ways to end here are Evil wins.
+export function upNext(s) {
+  if (s.phase === PHASE.VOTE_RESULT) {
+    if (s.voteHistory.at(-1).approved) return { type: 'quest', team: s.proposal };
+    if (s.rejectCount >= MAX_REJECTS) return { type: 'end', reason: '5_rejections' };
+    return { type: 'leader', leaderId: s.players[nextLeaderIdx(s)].id };
+  }
+  if (s.phase === PHASE.QUEST_RESULT) {
+    if (s.quests.filter((q) => q.result === 'FAIL').length >= 3) return { type: 'end', reason: '3_quests_failed' };
+    if (s.quests.filter((q) => q.result === 'SUCCESS').length >= 3) return { type: 'merlin' };
+    return { type: 'leader', leaderId: s.players[nextLeaderIdx(s)].id };
+  }
+  return null;
+}
+
+// Seats get a random role from the deck, except dev-named players (in join
+// order) who take their named role while the deck still has one.
+function dealRoles(joinOrder, seats, deck, ctx) {
+  const left = [...deck];
+  const forced = {};
+  if (ctx.devRoles) {
+    for (const p of joinOrder) {
+      const role = DEV_ROLE_NAME.exec(p.name)?.[1].toUpperCase();
+      const i = role ? left.indexOf(role) : -1;
+      if (i === -1) continue;
+      forced[p.id] = role;
+      left.splice(i, 1);
+    }
+  }
+  const rest = shuffle(left, ctx.rng);
+  return Object.fromEntries(seats.map((p) => [p.id, forced[p.id] ?? rest.pop()]));
 }
 
 const handlers = {
@@ -119,12 +169,10 @@ const handlers = {
     const rules = ctx.rulesFor(n);
     if (!rules) throw new GameError(`No rules configured for ${n} players.`);
 
+    const joinOrder = s.players;
     s.players = shuffle(s.players, ctx.rng);
-    const deck = shuffle(
-      [ROLE.MERLIN, ...Array(rules.good - 1).fill(ROLE.GOOD), ...Array(rules.evil).fill(ROLE.EVIL)],
-      ctx.rng,
-    );
-    s.roles = Object.fromEntries(s.players.map((p, i) => [p.id, deck[i]]));
+    const deck = [ROLE.MERLIN, ...Array(rules.good - 1).fill(ROLE.GOOD), ...Array(rules.evil).fill(ROLE.EVIL)];
+    s.roles = dealRoles(joinOrder, s.players, deck, ctx);
     s.gameId = ctx.newId();
     s.round = 0;
     s.rejectCount = 0;
@@ -136,6 +184,7 @@ const handlers = {
     s.merlinVotes = {};
     s.voteHistory = [];
     s.lastQuest = null;
+    s.pauseUntil = null;
     s.result = null;
     s.phase = PHASE.TEAM_BUILDING;
     events.push({
@@ -158,7 +207,7 @@ const handlers = {
     events.push({ type: 'proposal', round: s.round, leaderId: me, team: unique });
   },
 
-  vote(s, { approve }, actor, _ctx, events) {
+  vote(s, { approve }, actor, ctx, events) {
     const me = requirePlayer(s, actor);
     requirePhase(s, PHASE.TEAM_VOTE);
     if (typeof approve !== 'boolean') throw new GameError('Vote must be approve or reject.');
@@ -177,21 +226,12 @@ const handlers = {
     };
     s.voteHistory.push(record);
     s.votes = {};
+    s.rejectCount = approved ? 0 : s.rejectCount + 1;
     events.push({ type: 'vote_result', ...record });
-
-    if (approved) {
-      s.rejectCount = 0;
-      s.quests[s.round].team = s.proposal;
-      s.questCards = {};
-      s.phase = PHASE.QUEST;
-      return;
-    }
-    s.rejectCount += 1;
-    if (s.rejectCount >= MAX_REJECTS) return endGame(s, events, ROLE.EVIL, '5_rejections');
-    nextLeader(s);
+    pause(s, ctx, PHASE.VOTE_RESULT);
   },
 
-  quest(s, { success }, actor, _ctx, events) {
+  quest(s, { success }, actor, ctx, events) {
     const me = requirePlayer(s, actor);
     requirePhase(s, PHASE.QUEST);
     if (!s.proposal.includes(me)) throw new GameError('You are not on this quest.');
@@ -206,20 +246,31 @@ const handlers = {
     quest.successes = s.proposal.length - quest.fails;
     quest.result = quest.fails >= quest.failsNeeded ? 'FAIL' : 'SUCCESS';
     s.questCards = {}; // individual cards are never kept
-    s.lastQuest = { round: s.round, successes: quest.successes, fails: quest.fails, result: quest.result };
+    s.lastQuest = { round: s.round, successes: quest.successes, fails: quest.fails, result: quest.result, team: s.proposal };
     events.push({ type: 'quest_result', ...s.lastQuest });
+    pause(s, ctx, PHASE.QUEST_RESULT);
+  },
 
-    const failed = s.quests.filter((q) => q.result === 'FAIL').length;
-    const succeeded = s.quests.filter((q) => q.result === 'SUCCESS').length;
-    if (failed >= 3) return endGame(s, events, ROLE.EVIL, '3_quests_failed');
-    if (succeeded >= 3) {
+  // Ends a result pause. Sent by the server timer, or by the host to skip it.
+  continue(s, _a, actor, _ctx, events) {
+    if (actor?.kind !== 'system') requireHost(actor);
+    requirePhase(s, PHASE.VOTE_RESULT, PHASE.QUEST_RESULT);
+    const next = upNext(s);
+    const after = s.phase;
+    s.pauseUntil = null;
+    if (next.type === 'end') return endGame(s, events, ROLE.EVIL, next.reason);
+    if (next.type === 'quest') {
+      s.quests[s.round].team = s.proposal;
+      s.questCards = {};
+      s.phase = PHASE.QUEST;
+    } else if (next.type === 'merlin') {
       s.phase = PHASE.MERLIN_VOTE;
       s.proposal = null;
       s.merlinVotes = {};
-      return;
+    } else {
+      if (after === PHASE.QUEST_RESULT) s.round += 1;
+      nextLeader(s);
     }
-    s.round += 1;
-    nextLeader(s);
   },
 
   merlinVote(s, { target }, actor, _ctx, events) {
@@ -239,7 +290,7 @@ const handlers = {
 
   abort(s, _a, actor, _ctx, events) {
     requireHost(actor);
-    requirePhase(s, PHASE.TEAM_BUILDING, PHASE.TEAM_VOTE, PHASE.QUEST, PHASE.MERLIN_VOTE);
+    requirePhase(s, PHASE.TEAM_BUILDING, PHASE.TEAM_VOTE, PHASE.VOTE_RESULT, PHASE.QUEST, PHASE.QUEST_RESULT, PHASE.MERLIN_VOTE);
     endGame(s, events, null, 'aborted');
   },
 
@@ -254,7 +305,7 @@ const handlers = {
  * @param state  current state (not mutated)
  * @param action { type, ...payload }
  * @param actor  { kind: 'player', playerId } | { kind: 'host' } | { kind: 'system' }
- * @param ctx    { rulesFor(n), rng(), newId() }
+ * @param ctx    { rulesFor(n), rng(), newId(), now(), pauseMs, devRoles }
  * @returns { state, events }
  */
 export function apply(state, action, actor, ctx) {

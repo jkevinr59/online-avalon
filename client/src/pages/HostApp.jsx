@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { HOST_TOKEN, PLAYER_TOKEN, postJson, useActions, useGame, useStoredToken } from '../lib.js';
 import { Board, PlayerList } from '../components/Board.jsx';
 import { ConnectionBar, GameScreen, Toast } from '../components/GameScreen.jsx';
-import { GameOverPanel, LastResults, LobbyRules, StatusBanner, VoteHistory } from '../components/Phases.jsx';
+import { GameOverPanel, LastResults, LobbyRules, RevealPanel, StatusBanner, VoteHistory } from '../components/Phases.jsx';
+import { LangSwitch } from '../components/Modal.jsx';
+import { HelpModal } from '../components/Tips.jsx';
+import { useI18n } from '../i18n.jsx';
 
 export function HostApp() {
   const [hostToken, setHostToken] = useStoredToken(HOST_TOKEN);
@@ -20,6 +23,7 @@ export function HostApp() {
 }
 
 function HostLogin({ notice, onLogin }) {
+  const { t, tError } = useI18n();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const submit = async (e) => {
@@ -33,27 +37,32 @@ function HostLogin({ notice, onLogin }) {
   };
   return (
     <main className="page narrow">
-      <h1 className="title">Avalon Host</h1>
-      {notice && <div className="banner">{notice}</div>}
+      <div className="corner">
+        <LangSwitch />
+      </div>
+      <h1 className="title">{t('host.title')}</h1>
+      {notice && <div className="banner">{tError(notice)}</div>}
       <form className="card stack" onSubmit={submit}>
         <label>
-          Host password
+          {t('login.hostPassword')}
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus required />
         </label>
-        {error && <p className="error">{error}</p>}
-        <button className="btn btn-primary">Log in as host</button>
+        {error && <p className="error">{tError(error)}</p>}
+        <button className="btn btn-primary">{t('login.hostSubmit')}</button>
       </form>
     </main>
   );
 }
 
 function HostDashboard({ token, onExit }) {
+  const { t } = useI18n();
   const { view, connected, act } = useGame(token, onExit);
   const { run, error, busy, clearError } = useActions(act);
   const [playerToken, setPlayerToken] = useStoredToken(PLAYER_TOKEN);
   const [tab, setTab] = useState('host');
+  const [help, setHelp] = useState(false);
 
-  if (!view) return <div className="loading">{connected ? 'Loading…' : 'Connecting…'}</div>;
+  if (!view) return <div className="loading">{t(connected ? 'common.loading' : 'common.connecting')}</div>;
 
   const playing = !!playerToken;
   return (
@@ -61,21 +70,27 @@ function HostDashboard({ token, onExit }) {
       <ConnectionBar connected={connected} />
       <header className="topbar">
         <div>
-          <div className="brand">Avalon Host</div>
-          <div className="muted small">Players join at {window.location.origin}</div>
+          <div className="brand">{t('host.title')}</div>
+          <div className="muted small">{t('host.joinAt', { url: window.location.origin })}</div>
         </div>
-        <button type="button" className="btn-mini" onClick={() => window.confirm('Log out of the host dashboard?') && onExit('')}>
-          Log out
-        </button>
+        <div className="topbar-actions">
+          <button type="button" className="btn-mini" onClick={() => setHelp(true)}>
+            ❓ {t('game.help')}
+          </button>
+          <LangSwitch />
+          <button type="button" className="btn-mini" onClick={() => window.confirm(t('host.logoutConfirm')) && onExit('')}>
+            {t('host.logout')}
+          </button>
+        </div>
       </header>
 
       {playing && (
         <nav className="tabs">
           <button type="button" className={tab === 'host' ? 'active' : ''} onClick={() => setTab('host')}>
-            Host controls
+            {t('host.tabHost')}
           </button>
           <button type="button" className={tab === 'play' ? 'active' : ''} onClick={() => setTab('play')}>
-            My game
+            {t('host.tabPlay')}
           </button>
         </nav>
       )}
@@ -87,33 +102,35 @@ function HostDashboard({ token, onExit }) {
         </div>
       )}
       <div hidden={playing && tab !== 'host'} className="stack">
-        <HostControls view={view} run={run} busy={busy} playing={playing} onJoined={(t) => { setPlayerToken(t); setTab('play'); }} />
+        <HostControls view={view} run={run} busy={busy} playing={playing} onJoined={(tk) => { setPlayerToken(tk); setTab('play'); }} />
       </div>
+      {help && <HelpModal onClose={() => setHelp(false)} />}
       <Toast message={error} onClose={clearError} />
     </main>
   );
 }
 
 function HostControls({ view, run, busy, playing, onJoined }) {
+  const { t } = useI18n();
   const n = view.players.length;
   const canStart = n >= 5 && n <= 10;
 
-  const kick = (p) => window.confirm(`Remove ${p.name} from the lobby?`) && run('kick', { playerId: p.id });
-  const abort = () => window.confirm('End the current game for everyone? Roles will be revealed.') && run('abort');
+  const kick = (p) => window.confirm(t('host.kickConfirm', { name: p.name })) && run('kick', { playerId: p.id });
+  const abort = () => window.confirm(t('host.abortConfirm')) && run('abort');
 
   if (view.phase === 'LOBBY') {
     return (
       <>
         <section className="card stack">
-          <h3>Lobby</h3>
+          <h3>{t('host.lobby')}</h3>
           <LobbyRules rules={view.lobbyRules} />
           <button type="button" className="btn btn-primary" disabled={!canStart || busy} onClick={() => run('start')}>
-            Start game with {n} player{n === 1 ? '' : 's'}
+            {t('host.start', { n })}
           </button>
-          {!canStart && <p className="hint">{n < 5 ? `Waiting for ${5 - n} more player${5 - n === 1 ? '' : 's'}.` : 'Too many players (max 10).'}</p>}
+          {!canStart && <p className="hint">{n < 5 ? t('host.needMore', { n: 5 - n }) : t('host.tooMany')}</p>}
         </section>
         {!playing && <JoinAsPlayer run={run} busy={busy} onJoined={onJoined} />}
-        <PlayerList view={view} title="Joined players" onKick={kick} />
+        <PlayerList view={view} title={t('host.joined')} onKick={kick} />
         <RulesTable rules={view.admin?.allRules} />
         <RecentGames games={view.admin?.recentGames} />
       </>
@@ -126,11 +143,16 @@ function HostControls({ view, run, busy, playing, onJoined }) {
         <>
           <GameOverPanel view={view} />
           <button type="button" className="btn btn-primary" disabled={busy} onClick={() => run('reset')}>
-            New game with the same players
+            {t('host.newGame')}
           </button>
         </>
       ) : (
         <StatusBanner view={view} />
+      )}
+      {view.reveal && (
+        <section className="card">
+          <RevealPanel view={view} busy={busy} onSkip={() => run('continue')} />
+        </section>
       )}
       <Board view={view} />
       <LastResults view={view} />
@@ -138,9 +160,9 @@ function HostControls({ view, run, busy, playing, onJoined }) {
       <VoteHistory view={view} />
       {view.phase !== 'GAME_OVER' && (
         <section className="card stack">
-          <h3>Danger zone</h3>
+          <h3>{t('host.danger')}</h3>
           <button type="button" className="btn btn-reject" disabled={busy} onClick={abort}>
-            End game now
+            {t('host.endNow')}
           </button>
         </section>
       )}
@@ -150,6 +172,7 @@ function HostControls({ view, run, busy, playing, onJoined }) {
 }
 
 function JoinAsPlayer({ run, busy, onJoined }) {
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const submit = async (e) => {
     e.preventDefault();
@@ -158,32 +181,33 @@ function JoinAsPlayer({ run, busy, onJoined }) {
   };
   return (
     <form className="card stack" onSubmit={submit}>
-      <h3>Play as well?</h3>
+      <h3>{t('host.playToo')}</h3>
       <div className="inline-form">
-        <input placeholder="Your player name" value={name} onChange={(e) => setName(e.target.value)} maxLength={20} required />
+        <input placeholder={t('host.playerName')} value={name} onChange={(e) => setName(e.target.value)} maxLength={20} required />
         <button className="btn btn-secondary" disabled={busy}>
-          Join
+          {t('host.join')}
         </button>
       </div>
-      <p className="hint">The host dashboard never shows secret roles, so you can play fairly.</p>
+      <p className="hint">{t('host.fairHint')}</p>
     </form>
   );
 }
 
 function RulesTable({ rules }) {
+  const { t } = useI18n();
   if (!rules) return null;
   return (
     <details className="card">
-      <summary>Rules by player count</summary>
+      <summary>{t('host.rulesTitle')}</summary>
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Players</th>
-              <th>Good</th>
-              <th>Evil</th>
+              <th>{t('host.colPlayers')}</th>
+              <th>{t('host.colGood')}</th>
+              <th>{t('host.colEvil')}</th>
               {[1, 2, 3, 4, 5].map((i) => (
-                <th key={i}>Q{i}</th>
+                <th key={i}>{t('host.colQ', { n: i })}</th>
               ))}
             </tr>
           </thead>
@@ -204,31 +228,24 @@ function RulesTable({ rules }) {
           </tbody>
         </table>
       </div>
-      <p className="hint">★ needs 2 Fail cards to fail.</p>
+      <p className="hint">{t('host.star')}</p>
     </details>
   );
 }
 
-const REASONS = {
-  '5_rejections': '5 rejections',
-  '3_quests_failed': '3 quests failed',
-  merlin_found: 'Merlin found',
-  merlin_safe: 'Merlin safe',
-  aborted: 'Ended by host',
-};
-
 function RecentGames({ games }) {
+  const { t, lang } = useI18n();
   if (!games?.length) return null;
   return (
     <details className="card">
-      <summary>Recent games ({games.length})</summary>
+      <summary>{t('host.recent', { n: games.length })}</summary>
       <ul className="history">
         {games.map((g) => (
           <li key={g.id}>
             <div>
-              <strong>{g.winner === 'GOOD' ? 'Good won' : g.winner === 'EVIL' ? 'Evil won' : g.ended_at ? 'No winner' : 'In progress'}</strong>
-              {g.reason && <span className="muted"> · {REASONS[g.reason] ?? g.reason}</span>}
-              <span className="muted"> · {new Date(g.started_at).toLocaleString()}</span>
+              <strong>{t(g.winner === 'GOOD' ? 'host.goodWon' : g.winner === 'EVIL' ? 'host.evilWon' : g.ended_at ? 'host.noWinner' : 'host.inProgress')}</strong>
+              {g.reason && <span className="muted"> · {t(`host.reasons.${g.reason}`)}</span>}
+              <span className="muted"> · {new Date(g.started_at).toLocaleString(lang)}</span>
             </div>
             <div className="hint">{g.players}</div>
           </li>

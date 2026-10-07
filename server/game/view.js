@@ -1,11 +1,12 @@
-import { PHASE, ROLE, leaderId, evilIds } from './engine.js';
+import { PHASE, ROLE, leaderId, evilIds, upNext } from './engine.js';
 
 // Builds what ONE viewer is allowed to see. The full state never leaves the
 // server; every socket gets its own projection from here.
 //
 // viewer: { kind: 'player', playerId } | { kind: 'host' }
 // online: Set of playerIds with at least one connected socket
-export function viewFor(s, viewer, online = new Set()) {
+// now:    current time, for the countdown of a result pause
+export function viewFor(s, viewer, online = new Set(), now = Date.now()) {
   const meId = viewer.kind === 'player' ? viewer.playerId : null;
   const myRole = meId ? s.roles[meId] : undefined;
   const inGame = s.phase !== PHASE.LOBBY;
@@ -14,7 +15,9 @@ export function viewFor(s, viewer, online = new Set()) {
   const evilUnmasked = s.phase === PHASE.MERLIN_VOTE || over;
   const evil = evilIds(s);
   const lead = live ? leaderId(s) : null;
-  const team = s.phase === PHASE.TEAM_VOTE || s.phase === PHASE.QUEST ? s.proposal : null;
+  // A rejected team is not going anywhere, so it stops being "the team" once the vote is in.
+  const rejected = s.phase === PHASE.VOTE_RESULT && !s.voteHistory.at(-1).approved;
+  const team = [PHASE.TEAM_VOTE, PHASE.VOTE_RESULT, PHASE.QUEST, PHASE.QUEST_RESULT].includes(s.phase) && !rejected ? s.proposal : null;
 
   const players = s.players.map((p, i) => {
     let role;
@@ -68,6 +71,16 @@ export function viewFor(s, viewer, online = new Set()) {
     }
   }
 
+  // Shown big on every screen while the game pauses after a vote or quest.
+  let reveal = null;
+  if (s.phase === PHASE.VOTE_RESULT || s.phase === PHASE.QUEST_RESULT) {
+    reveal = {
+      kind: s.phase === PHASE.VOTE_RESULT ? 'vote' : 'quest',
+      next: upNext(s),
+      remainingMs: Math.max(0, (s.pauseUntil ?? now) - now),
+    };
+  }
+
   return {
     phase: s.phase,
     gameId: s.gameId,
@@ -90,6 +103,7 @@ export function viewFor(s, viewer, online = new Set()) {
     lastVote: s.voteHistory.at(-1) ?? null,
     lastQuest: s.lastQuest,
     merlinVote,
+    reveal,
     result: over ? s.result : null,
   };
 }

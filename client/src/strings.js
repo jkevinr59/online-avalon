@@ -215,7 +215,7 @@ const id = {
         'Kalau Tim Baik menang 3 misi, Tim Jahat boleh menebak siapa Merlin. Kalau tebakannya benar, Tim Baik kalah.',
       ],
       EVIL: [
-        'Berpuralah jadi Tim Baik dan ikut berdiskusi seperti biasa.',
+        'Berpura-puralah jadi Tim Baik dan ikut berdiskusi seperti biasa.',
         'Bantu sesama Tim Jahat diam-diam, jangan terlihat terlalu kompak.',
         'Cari pemain yang selalu "kebetulan benar" soal siapa yang jahat, karena dia kemungkinan Merlin.',
       ],
